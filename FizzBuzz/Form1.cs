@@ -13,9 +13,6 @@ namespace FizzBuzz
 {
     public partial class Form1 : Form
     {
-        private BinaryReader prvReader;
-        private BinaryWriter prvWriter;
-
         public Form1()
         {
             InitializeComponent();
@@ -69,42 +66,93 @@ namespace FizzBuzz
 
         private void startBtn_Click(object sender, EventArgs e)
         {
-            FileStream fs;
+            FileStream inFs;
+            FileStream outFs;
+            StreamReader reader;
+            StreamWriter writer;
+            String line;
+            Int32 fizzNum;
+            Int32 buzzNum;
+            Int32 count;
 
             //Open input file.
-            fs = openFileStream(inFilename.Text, FileMode.Open);
-            prvReader = openReader(fs);
+            inFs = openFileStream(inFilename.Text, FileMode.Open);
+            reader = openReader(inFs);
 
             //Open output file.
-            fs = openFileStream(outFilename.Text, FileMode.Create);
-            prvWriter = openWriter(fs);
+            outFs = openFileStream(outFilename.Text, FileMode.Create);
+            writer = openWriter(outFs);
 
             //TODO: FizzBuzz...
+            while ((line = reader.ReadLine()) != null)
+            {
+                bool inputValid = true;
 
-            prvReader.Close();
-            prvWriter.Close();
+                String[] numbers = line.Split(' ');
+
+                fizzNum = Convert.ToInt32(numbers[0]);
+                if ((fizzNum < 1) || (fizzNum > 20))
+                {
+                    writer.WriteLine("Fizz number is out of range [1, 20], received: " + fizzNum.ToString());
+                    inputValid = false;
+                }
+
+                buzzNum = Convert.ToInt32(numbers[1]);
+                if ((buzzNum < 1) || (buzzNum > 20))
+                {
+                    writer.WriteLine("Buzz number is out of range [1, 20], received: " + buzzNum.ToString());
+                    inputValid = false;
+                }
+
+                count = Convert.ToInt32(numbers[2]);
+                if ((count < 21) || (count > 100))
+                {
+                    writer.WriteLine("Count number is out of range [1, 20], received: " + count.ToString());
+                    inputValid = false;
+                }
+
+                if (inputValid)
+                    doFizzBuzz(fizzNum, buzzNum, count, writer);
+            }
+
+            reader.Close();
+            writer.Close();
+            inFs.Close();
+            outFs.Close();
+
+            System.Diagnostics.Process.Start("notepad.exe", outFilename.Text);
+
+            Application.Exit();
         }
 
-        private void FizzBuzz( int pFizz, int pBuzz, int pCount)
+        private void doFizzBuzz(int pFizz, int pBuzz, int pCount, StreamWriter outputStream)
         {
             String outString = String.Empty;
             String fbString = String.Empty;
 
-            for (int number = 1; number < pCount + 1; pCount ++)
+            for (int number = 1; number < pCount + 1; number ++)
             {
                 fbString = String.Empty;
 
-                if ((number % pFizz) != 0) //Add Fizz (F)
+                if ((number % pFizz) == 0) //Add Fizz (F)
                     fbString += "F";
 
-                if ((number % pBuzz) != 0) //Add Buzz (B)
+                if ((number % pBuzz) == 0) //Add Buzz (B)
                     fbString += "B";
 
                 if (fbString == String.Empty) //Add number
                     fbString = number.ToString();
 
-                outString += fbString + " ";
+                outString += fbString;
+
+                if (number < pCount)
+                    outString += " ";
             }
+
+            outputStream.WriteLine(outString);
+#if DEBUG
+            Console.WriteLine(outString);
+#endif
         }
 
         public FileStream openFileStream(String pFilename, FileMode pFileMode)
@@ -113,15 +161,15 @@ namespace FizzBuzz
             return (stream);
         }
 
-        public BinaryReader openReader(FileStream pStream)
+        public StreamReader openReader(FileStream pStream)
         {
-            BinaryReader reader = new BinaryReader(pStream);
+            StreamReader reader = new StreamReader(pStream);
             return (reader);
         }
 
-        public BinaryWriter openWriter (FileStream pStream)
+        public StreamWriter openWriter (FileStream pStream)
         {
-            BinaryWriter writer = new BinaryWriter(pStream);
+            StreamWriter writer = new StreamWriter(pStream);
             return (writer);
         }
 
